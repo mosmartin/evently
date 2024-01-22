@@ -8,14 +8,50 @@ import (
 var DB *sql.DB
 
 func InitDB() (*sql.DB, error) {
-	DB, err := sql.Open("sqlite3", "./evently.db")
+	db, err := sql.Open("sqlite3", "./evently.db")
 	if err != nil {
-		// return nil, err
-		panic("🔴 Could not connect to database")
+		panic("🔴 Could not connect to database!")
 	}
 
-	DB.SetMaxOpenConns(10)
-	DB.SetMaxIdleConns(5)
+	db.SetMaxOpenConns(10)
+	db.SetMaxIdleConns(5)
 
-	return DB, nil
+	err = createTables(db)
+	if err != nil {
+		panic("🔴 Could not create tables!")
+	}
+
+	return db, nil
+}
+
+// createTables creates the tables in the database. should take the database connection as an argument
+func createTables(db *sql.DB) error {
+	_, err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS users (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name TEXT NOT NULL,
+			email TEXT NOT NULL UNIQUE,
+			password TEXT NOT NULL
+		);
+	`)
+	if err != nil {
+		panic("🔴 Could not create users table!")
+	}
+
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS events (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name TEXT NOT NULL,
+			description TEXT NOT NULL,
+			location TEXT NOT NULL,
+			date_time DATETIME NOT NULL,
+			user_id INTEGER NOT NULL,
+			FOREIGN KEY (user_id) REFERENCES users(id)
+		);
+	`)
+	if err != nil {
+		panic("🔴 Could not create events table!")
+	}
+
+	return nil
 }

@@ -4,10 +4,12 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mosmartin/evently/db"
 	"github.com/mosmartin/evently/models"
 )
 
 func main() {
+	db.InitDB()
 	server := gin.Default()
 
 	server.GET("/events", getEvents)
